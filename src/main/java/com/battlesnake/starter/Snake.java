@@ -11,6 +11,7 @@ import spark.Response;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Vector;
 
 import static spark.Spark.port;
 import static spark.Spark.post;
@@ -146,20 +147,96 @@ public class Snake {
                 int height = moveRequest.get("board").get("height").asInt();
 
             */
+            Move move = parseMove(moveRequest);
 
-            Board board = new Board(moveRequest);
+
+            Board_2 board = new Board_2(moveRequest);
 
             String[] possibleMoves = { "up", "down", "left", "right" };
 
             // Choose a random direction to move in
             int choice = new Random().nextInt(possibleMoves.length);
-            String move = possibleMoves[choice];
+            String next_move = possibleMoves[choice];
 
-            LOG.info("MOVE {}", move);
+            LOG.info("MOVE {}", next_move);
 
             Map<String, String> response = new HashMap<>();
-            response.put("move", move);
+            response.put("move", next_move);
             return response;
+        }
+
+        Move parseMove(JsonNode moveRequest) {
+
+            System.out.println("id: ");
+            System.out.print(moveRequest.get("game").get("id"));
+            Game game = parseGame(moveRequest.get("game"));
+            int turn = moveRequest.get("turn").asInt();
+            Board board = parseBoard(moveRequest.get("board"));
+            BattleSnake you = parseSnake(moveRequest.get("you"));
+
+            return new Move(game, turn, board, you);
+        }
+
+        private Game parseGame(JsonNode gameReq) {
+            return new Game(gameReq.get("id").asText(),
+                    gameReq.get("timeout").asInt());
+        }
+
+
+        private Board parseBoard(JsonNode boardReq) {
+
+            Vector<Coordinates> food = new Vector<Coordinates>();
+            food.add(new Coordinates (1,1));
+            // TODO parse food
+
+            Vector<Snake> snakes = new Vector<>();
+            // TODO parse snakes
+
+            return new Board(boardReq.get("height").asInt(),
+                             boardReq.get("width").asInt(),
+                             food,
+                             snakes);
+        }
+
+        private BattleSnake parseSnake(JsonNode snakeReq) {
+
+            return new BattleSnake(snakeReq.get("id").asText(),
+                    snakeReq.get("name").asText(),
+                    snakeReq.get("health").asInt(),
+                    parseBody(snakeReq.get("body")),
+                    snakeReq.get("latency").asText(),
+                    parseCoordinates(snakeReq.get("head")),
+                    snakeReq.get("length").asInt(),
+                    snakeReq.get("shout").asText(),
+                    snakeReq.get("squad").asText());
+        }
+
+
+        private Coordinates parseCoordinates(JsonNode coordinates)
+        {
+            return new Coordinates(coordinates.get("x").asInt(),
+                                   coordinates.get("y").asInt());
+        }
+
+        private Vector<Coordinates> parseBody(JsonNode bodyReq) {
+
+            Vector<Coordinates> body = new Vector<>();
+
+            boolean empty = false;
+            int i = 0;
+
+            while (!empty);
+            {
+                if (bodyReq.get(i).isNull()) {
+                    empty = true;
+                } else {
+                    body.addElement(parseCoordinates(bodyReq.get(i)));
+                    System.out.println(body.get(i).x);
+                    System.out.println(body.get(i).y);
+                }
+                i++;
+            }
+            return body;
         }
 
         /**

@@ -1,14 +1,17 @@
 package com.battlesnake.starter;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Vector;
 
 public class Board {
-    public BoardState[][] board;
+    int height;
+    int width;
+    Vector<Coordinates> food;
+    Vector<Snake> snakes;
 
-    Board(JsonNode moveRequest)
-    {
-        System.out.print("test");
+    public Board(int height, int width, Vector<Coordinates> food, Vector<Snake> snakes) {
+        this.height = height;
+        this.width = width;
+        this.food = food;
+        this.snakes = snakes;
     }
-
-
 }
