@@ -147,6 +147,8 @@ public class Snake {
 
             */
 
+            Board board = new Board(moveRequest);
+
             String[] possibleMoves = { "up", "down", "left", "right" };
 
             // Choose a random direction to move in
