@@ -19,7 +19,7 @@ import static spark.Spark.get;
 
 /**
  * This is a simple Battlesnake server written in Java.
- * 
+ *
  * For instructions see
  * https://github.com/BattlesnakeOfficial/starter-snake-java/README.md
  */
@@ -76,7 +76,9 @@ public class Snake {
                 } else if (uri.equals("/start")) {
                     snakeResponse = start(parsedRequest);
                 } else if (uri.equals("/move")) {
+                    LOG.info("MOVE-START");
                     snakeResponse = move(parsedRequest);
+                    LOG.info("MOVE-END");
                 } else if (uri.equals("/end")) {
                     snakeResponse = end(parsedRequest);
                 } else {
@@ -90,20 +92,20 @@ public class Snake {
             }
         }
 
-    
+
         /**
          * This method is called everytime your Battlesnake is entered into a game.
-         * 
+         *
          * Use this method to decide how your Battlesnake is going to look on the board.
          *
          * @return a response back to the engine containing the Battlesnake setup
          *         values.
          */
-        public Map<String, String> index() {         
+        public Map<String, String> index() {
             Map<String, String> response = new HashMap<>();
             response.put("apiversion", "1");
-            response.put("author", "simsog");        
-            response.put("color", "#123456");     
+            response.put("author", "simsog");
+            response.put("color", "#123456");
             response.put("head", "default");  // TODO: Personalize
             response.put("tail", "default");  // TODO: Personalize
             return response;
@@ -111,7 +113,7 @@ public class Snake {
 
         /**
          * This method is called everytime your Battlesnake is entered into a game.
-         * 
+         *
          * Use this method to decide how your Battlesnake is going to look on the board.
          *
          * @param startRequest a JSON data map containing the information about the game
@@ -126,7 +128,7 @@ public class Snake {
         /**
          * This method is called on every turn of a game. It's how your snake decides
          * where to move.
-         * 
+         *
          * Valid moves are "up", "down", "left", or "right".
          *
          * @param moveRequest a map containing the JSON sent to this snake. Use this
@@ -137,6 +139,7 @@ public class Snake {
             try {
                 LOG.info("Data: {}", JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(moveRequest));
             } catch (JsonProcessingException e) {
+                LOG.info("Error somethiethingiawe");
                 e.printStackTrace();
             }
 
@@ -147,8 +150,15 @@ public class Snake {
                 int height = moveRequest.get("board").get("height").asInt();
 
             */
+            LOG.info("--------- Begin Parsing -------");
+
             Move move = parseMove(moveRequest);
 
+            // LOG.info("Data: {}", JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(moveRequest));
+
+            LOG.info("+++++++++++++++++++++++++++++++++++++");
+            LOG.info("Turn: " + move.turn);
+            LOG.info("+++++++++++++++++++++++++++++++++++++");
 
             Board_2 board = new Board_2(moveRequest);
 
@@ -167,12 +177,16 @@ public class Snake {
 
         Move parseMove(JsonNode moveRequest) {
 
-            System.out.println("id: ");
-            System.out.print(moveRequest.get("game").get("id"));
+            LOG.info("error-1");
             Game game = parseGame(moveRequest.get("game"));
+            LOG.info("id: {}, timeout: {}.", game.id, game.timeout);
+            LOG.info("error-2");
             int turn = moveRequest.get("turn").asInt();
+            LOG.info("error-3");
             Board board = parseBoard(moveRequest.get("board"));
+            LOG.info("error-4");
             BattleSnake you = parseSnake(moveRequest.get("you"));
+            LOG.info("error-5");
 
             return new Move(game, turn, board, you);
         }
@@ -185,6 +199,8 @@ public class Snake {
 
         private Board parseBoard(JsonNode boardReq) {
 
+            LOG.info("error-2.1");
+
             Vector<Coordinates> food = new Vector<Coordinates>();
             food.add(new Coordinates (1,1));
             // TODO parse food
@@ -193,14 +209,15 @@ public class Snake {
             // TODO parse snakes
 
             return new Board(boardReq.get("height").asInt(),
-                             boardReq.get("width").asInt(),
-                             food,
-                             snakes);
+                    boardReq.get("width").asInt(),
+                    food,
+                    snakes);
         }
 
         private BattleSnake parseSnake(JsonNode snakeReq) {
 
-            return new BattleSnake(snakeReq.get("id").asText(),
+            // TODO split this up into pieces and figure out why null pointer shit
+            BattleSnake test =  new BattleSnake(snakeReq.get("id").asText(),
                     snakeReq.get("name").asText(),
                     snakeReq.get("health").asInt(),
                     parseBody(snakeReq.get("body")),
@@ -209,39 +226,49 @@ public class Snake {
                     snakeReq.get("length").asInt(),
                     snakeReq.get("shout").asText(),
                     snakeReq.get("squad").asText());
+
+            LOG.info("--- Parsed snek: ---");
+            return test;
         }
 
 
         private Coordinates parseCoordinates(JsonNode coordinates)
         {
-            return new Coordinates(coordinates.get("x").asInt(),
-                                   coordinates.get("y").asInt());
+            LOG.info("--- Parsing coords: ---");
+
+            return new Coordinates(2,2);
+//            return new Coordinates(coordinates.get("x").asInt(),
+//                    coordinates.get("y").asInt());
         }
 
-        private Vector<Coordinates> parseBody(JsonNode bodyReq) {
+        private Vector<Coordinates> parseBody(JsonNode bodyReq)
+        {
+
+            LOG.info("--- Parsing body: ---");
 
             Vector<Coordinates> body = new Vector<>();
 
             boolean empty = false;
             int i = 0;
 
-            while (!empty);
-            {
-                if (bodyReq.get(i).isNull()) {
-                    empty = true;
-                } else {
-                    body.addElement(parseCoordinates(bodyReq.get(i)));
-                    System.out.println(body.get(i).x);
-                    System.out.println(body.get(i).y);
-                }
-                i++;
-            }
+//            while (!empty && i < 3);
+//            {
+//                if (bodyReq.get(i).isNull()) {
+//                    empty = true;
+//                    LOG.info("Body is empty. Index: {}", i);
+//                } else {
+//                    LOG.info("Body not yet empty. Index: {}", i);
+//                    body.addElement(parseCoordinates(bodyReq.get(i)));
+//                    LOG.info("x: {}, y: {}.", body.get(i).x, body.get(i).y);
+//                }
+//                i++;
+//            }
             return body;
         }
 
         /**
          * This method is called when a game your Battlesnake was in ends.
-         * 
+         *
          * It is purely for informational purposes, you don't have to make any decisions
          * here.
          *
