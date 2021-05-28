@@ -71,18 +71,23 @@ public class Snake {
                 String uri = req.uri();
                 LOG.info("{} called with: {}", uri, req.body());
                 Map<String, String> snakeResponse;
-                if (uri.equals("/")) {
-                    snakeResponse = index();
-                } else if (uri.equals("/start")) {
-                    snakeResponse = start(parsedRequest);
-                } else if (uri.equals("/move")) {
-                    LOG.info("MOVE-START");
-                    snakeResponse = move(parsedRequest);
-                    LOG.info("MOVE-END");
-                } else if (uri.equals("/end")) {
-                    snakeResponse = end(parsedRequest);
-                } else {
-                    throw new IllegalAccessError("Strange call made to the snake: " + uri);
+                switch (uri) {
+                    case "/":
+                        snakeResponse = index();
+                        break;
+                    case "/start":
+                        snakeResponse = start(parsedRequest);
+                        break;
+                    case "/move":
+                        LOG.info("MOVE-START");
+                        snakeResponse = move(parsedRequest);
+                        LOG.info("MOVE-END");
+                        break;
+                    case "/end":
+                        snakeResponse = end(parsedRequest);
+                        break;
+                    default:
+                        throw new IllegalAccessError("Strange call made to the snake: " + uri);
                 }
                 LOG.info("Responding with: {}", JSON_MAPPER.writeValueAsString(snakeResponse));
                 return snakeResponse;
@@ -177,16 +182,12 @@ public class Snake {
 
         Move parseMove(JsonNode moveRequest) {
 
-            LOG.info("error-1");
             Game game = parseGame(moveRequest.get("game"));
             LOG.info("id: {}, timeout: {}.", game.id, game.timeout);
-            LOG.info("error-2");
             int turn = moveRequest.get("turn").asInt();
-            LOG.info("error-3");
             Board board = parseBoard(moveRequest.get("board"));
-            LOG.info("error-4");
+            printBoard(board);
             BattleSnake you = parseSnake(moveRequest.get("you"));
-            LOG.info("error-5");
 
             return new Move(game, turn, board, you);
         }
@@ -198,9 +199,7 @@ public class Snake {
 
         private Board parseBoard(JsonNode boardReq) {
 
-            LOG.info("error-2.1");
-
-            Vector<Coordinates> food = new Vector<Coordinates>();
+            Vector<Coordinates> food = new Vector<>();
             food.add(new Coordinates (1,1));
             // TODO parse food
 
@@ -212,7 +211,22 @@ public class Snake {
                     food,
                     snakes);
         }
+        private void printBoard(Board board) {
+            for (int h = 0; h < board.height; h++){
+                String line = "";
+                String food;
 
+                for (int w = 0; w < board.width; w++){
+                    if (board.food.contains(new Coordinates (h,w))){
+                        food = "*";
+                    }
+                    else food = " ";
+
+                    line += "[" + food + "]";
+                }
+                LOG.info(line);
+            }
+        }
         private BattleSnake parseSnake(JsonNode snakeReq) {
 
             BattleSnake test =  new BattleSnake(snakeReq.get("id").asText(),
