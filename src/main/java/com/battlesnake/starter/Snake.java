@@ -155,15 +155,15 @@ public class Snake {
                 int height = moveRequest.get("board").get("height").asInt();
 
             */
-            LOG.info("--------- Begin Parsing -------");
+            LOG.info("------Begin Parsing-----");
 
             Move move = parseMove(moveRequest);
 
             // LOG.info("Data: {}", JSON_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(moveRequest));
 
-            LOG.info("+++++++++++++++++++++++++++++++++++++");
+            LOG.info("++++++++++++++++++++++++");
             LOG.info("Turn: " + move.turn);
-            LOG.info("+++++++++++++++++++++++++++++++++++++");
+            LOG.info("++++++++++++++++++++++++");
 
             String next_move = findNextMove(move);
 
@@ -319,7 +319,8 @@ public class Snake {
         }
 
         private String findNextMove(Move move) {
-            return  convertMove(simpleMove(move));
+            //return  convertMove(simpleMove(move));
+            return "right";
         }
 
 
