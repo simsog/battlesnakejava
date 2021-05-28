@@ -8,10 +8,7 @@ import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Vector;
+import java.util.*;
 
 import static spark.Spark.port;
 import static spark.Spark.post;
@@ -23,6 +20,9 @@ import static spark.Spark.get;
  * For instructions see
  * https://github.com/BattlesnakeOfficial/starter-snake-java/README.md
  */
+enum Direction{
+    UP, RIGHT, DOWN, LEFT
+}
 public class Snake {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private static final Handler HANDLER = new Handler();
@@ -165,13 +165,7 @@ public class Snake {
             LOG.info("Turn: " + move.turn);
             LOG.info("+++++++++++++++++++++++++++++++++++++");
 
-            Board_2 board = new Board_2(moveRequest);
-
-            String[] possibleMoves = { "up", "down", "left", "right" };
-
-            // Choose a random direction to move in
-            int choice = new Random().nextInt(possibleMoves.length);
-            String next_move = possibleMoves[choice];
+            String next_move = findNextMove(move);
 
             LOG.info("MOVE {}", next_move);
 
@@ -186,7 +180,8 @@ public class Snake {
             LOG.info("id: {}, timeout: {}.", game.id, game.timeout);
             int turn = moveRequest.get("turn").asInt();
             Board board = parseBoard(moveRequest.get("board"));
-            printBoard(board);
+            fillBoard(board);
+            board.printBoard();
             BattleSnake you = parseSnake(moveRequest.get("you"));
 
             return new Move(game, turn, board, you);
@@ -199,83 +194,159 @@ public class Snake {
 
         private Board parseBoard(JsonNode boardReq) {
 
-            Vector<Coordinates> food = new Vector<>();
-            food.add(new Coordinates (1,1));
-            // TODO parse food
+            Vector<Coordinates> food = parseCoordinatesVector(boardReq.get("food"));
 
-            Vector<Snake> snakes = new Vector<>();
-            // TODO parse snakes
+            Vector<BattleSnake> snakes = parseSnakeVector(boardReq.get("snakes"));
 
             return new Board(boardReq.get("height").asInt(),
                     boardReq.get("width").asInt(),
                     food,
                     snakes);
         }
-        private void printBoard(Board board) {
-            for (int h = 0; h < board.height; h++){
-                String line = "";
-                String food;
 
-                for (int w = 0; w < board.width; w++){
-                    if (board.food.contains(new Coordinates (h,w))){
-                        food = "*";
-                    }
-                    else food = " ";
+        private void fillBoard(Board board){
+            BoardTile[][] boardTiles = new BoardTile[board.width][board.height];
+            // boardTiles[0][0] = BoardTile.ME;
 
-                    line += "[" + food + "]";
-                }
-                LOG.info(line);
+            for(int x=0;x<board.width;x++){
+                Arrays.fill(boardTiles[x], BoardTile.EMPTY);
             }
+
+            // Fill foods
+            Iterator foodIt = board.food.iterator();
+            while (foodIt.hasNext()){
+                Coordinates co = (Coordinates) foodIt.next();
+                boardTiles[co.x][co.y] = BoardTile.FOOD;
+            }
+            Iterator SnakeIt = board.snakes.iterator();
+            boolean me = true;
+            while (SnakeIt.hasNext()){
+                BattleSnake snake = (BattleSnake) SnakeIt.next();
+                Iterator bodyIt = snake.body.iterator();
+
+                while (bodyIt.hasNext()) {
+                    Coordinates co = (Coordinates) bodyIt.next();
+                    if (me) {
+                        boardTiles[co.x][co.y] = BoardTile.ME;
+                    } else {
+                        boardTiles[co.x][co.y] = BoardTile.ENEMY;
+                    }
+                }
+                me = false;  //Only the first snake is yourself.
+            }
+            board.boardTiles = boardTiles;
         }
+
         private BattleSnake parseSnake(JsonNode snakeReq) {
 
-            BattleSnake test =  new BattleSnake(snakeReq.get("id").asText(),
+            BattleSnake snake =  new BattleSnake(snakeReq.get("id").asText(),
                     snakeReq.get("name").asText(),
                     snakeReq.get("health").asInt(),
-                    parseBody(snakeReq.get("body")),
+                    parseCoordinatesVector(snakeReq.get("body")),
                     snakeReq.get("latency").asText(),
                     parseCoordinates(snakeReq.get("head")),
                     snakeReq.get("length").asInt(),
                     snakeReq.get("shout").asText());
 
-            LOG.info("--- Parsed snek: ---");
-            return test;
+            return snake;
         }
-
 
         private Coordinates parseCoordinates(JsonNode coordinates)
         {
-            LOG.info("--- Parsing coords: ---");
 
-            return new Coordinates(2,2);
-//            return new Coordinates(coordinates.get("x").asInt(),
-//                    coordinates.get("y").asInt());
+            return new Coordinates(coordinates.get("x").asInt(),
+                    coordinates.get("y").asInt());
         }
 
-        private Vector<Coordinates> parseBody(JsonNode bodyReq)
-        {
+        private Vector<Coordinates> parseCoordinatesVector(JsonNode foodReq){
 
-            LOG.info("--- Parsing body: ---");
+            Vector<Coordinates> food = new Vector<>();
 
-            Vector<Coordinates> body = new Vector<>();
-
-            boolean empty = false;
-            int i = 0;
-
-//            while (!empty && i < 3);
-//            {
-//                if (bodyReq.get(i).isNull()) {
-//                    empty = true;
-//                    LOG.info("Body is empty. Index: {}", i);
-//                } else {
-//                    LOG.info("Body not yet empty. Index: {}", i);
-//                    body.addElement(parseCoordinates(bodyReq.get(i)));
-//                    LOG.info("x: {}, y: {}.", body.get(i).x, body.get(i).y);
-//                }
-//                i++;
-//            }
-            return body;
+            for (int i = 0; i < foodReq.size(); i++){
+                food.add(parseCoordinates(foodReq.get(i)));
+            }
+            return food;
         }
+
+        private Vector<BattleSnake> parseSnakeVector(JsonNode snakeReq){
+
+            Vector<BattleSnake> snakes = new Vector<>();
+
+            for (int i = 0; i < snakeReq.size(); i++){
+                snakes.add(parseSnake(snakeReq.get(i)));
+            }
+            return snakes;
+        }
+
+        /**
+         * Check if the move is inside game board
+         */
+        private boolean legalMove(Direction dir, Coordinates head, Board board){
+            switch (dir){
+                case UP: {
+                    if (head.y >= board.height) return false;
+                    else return true;
+                }
+                case DOWN: {
+                    if (head.y <= 0) return false;
+                    else return true;
+                }
+                case RIGHT: {
+                    if (head.x >= board.width) return false;
+                    else return true;
+                }
+                case LEFT: {
+                    if (head.x >= 0) return false;
+                    else return true;
+                }
+            }
+            return false;
+        }
+
+        private String convertMove(Direction dir) {
+            switch (dir) {
+                case UP:
+                    return "up";
+                case RIGHT:
+                    return "right";
+                case DOWN:
+                    return "down";
+                case LEFT:
+                    return "left";
+            }
+            return "up";
+        }
+
+        private String findNextMove(Move move) {
+            return  convertMove(simpleMove(move));
+        }
+
+
+        /**
+         *  Just move to any empty tile next to head.
+         *  Priority: UP > Right > Down > Left
+         */
+        private Direction simpleMove(Move move) {
+            Coordinates head = move.you.head;
+
+            if (legalMove(Direction.UP, head, move.board)) return Direction.UP;
+            else if (legalMove(Direction.RIGHT, head, move.board)) return Direction.RIGHT;
+            else if (legalMove(Direction.DOWN, head, move.board)) return Direction.DOWN;
+            else if (legalMove(Direction.LEFT, head, move.board)) return Direction.LEFT;
+            else return Direction.UP;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
 
         /**
          * This method is called when a game your Battlesnake was in ends.

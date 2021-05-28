@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +43,15 @@ public class SnakeTest {
         JsonNode startRequest = OBJECT_MAPPER.readTree("{}");
         Map<String, String> response = handler.end(startRequest);
         assertEquals(0, response.size());
-
-
     }
 
+    @Test
+    void boardTest() throws IOException {
+        File jsonFile = new File("D:\\Jobb\\battlesnakejava\\src\\test\\java\\com\\battlesnake\\starter\\data.json");
+        JsonNode moveRequest = OBJECT_MAPPER.readTree(jsonFile);
+        Move a = handler.parseMove(moveRequest);
+        assertTrue(true);
+    }
     @Test
     void moveTest() throws IOException {
         JsonNode moveRequest = OBJECT_MAPPER.readTree("{}");
