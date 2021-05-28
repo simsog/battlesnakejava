@@ -192,7 +192,7 @@ public class Snake {
                     gameReq.get("timeout").asInt());
         }
 
-        private Board parseBoard(JsonNode boardReq) {
+        Board parseBoard(JsonNode boardReq) {
 
             Vector<Coordinates> food = parseCoordinatesVector(boardReq.get("food"));
 
@@ -204,7 +204,7 @@ public class Snake {
                     snakes);
         }
 
-        private void fillBoard(Board board){
+        public void fillBoard(Board board){
             BoardTile[][] boardTiles = new BoardTile[board.width][board.height];
             // boardTiles[0][0] = BoardTile.ME;
 
@@ -285,7 +285,7 @@ public class Snake {
             System.out.println("checking dir: " + convertMove(dir));
             switch (dir){
                 case UP: {
-                    if (head.y >= board.height) return false;
+                    if (head.y >= board.height-1) return false;
                     else return true;
                 }
                 case DOWN: {
@@ -293,7 +293,7 @@ public class Snake {
                     else return true;
                 }
                 case RIGHT: {
-                    if (head.x >= board.width) return false;
+                    if (head.x >= board.width-1) return false;
                     else return true;
                 }
                 case LEFT: {

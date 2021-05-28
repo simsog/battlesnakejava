@@ -49,12 +49,16 @@ public class SnakeTest {
     void boardTest() throws IOException {
         File jsonFile = new File("D:\\Jobb\\battlesnakejava\\src\\test\\java\\com\\battlesnake\\starter\\data.json");
         JsonNode moveRequest = OBJECT_MAPPER.readTree(jsonFile);
-        Move a = handler.parseMove(moveRequest);
+        Board board = handler.parseBoard(moveRequest.get("board"));
+        handler.fillBoard(board);
+        board.printBoard();
         assertTrue(true);
     }
     @Test
     void moveTest() throws IOException {
-        JsonNode moveRequest = OBJECT_MAPPER.readTree("{}");
+        File jsonFile = new File("D:\\Jobb\\battlesnakejava\\src\\test\\java\\com\\battlesnake\\starter\\movetest.json");
+        JsonNode moveRequest = OBJECT_MAPPER.readTree(jsonFile);
+
         Map<String, String> response = handler.move(moveRequest);
 
         List<String> options = new ArrayList<String>();
