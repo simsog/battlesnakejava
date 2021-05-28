@@ -11,9 +11,8 @@ public class BattleSnake {
     Coordinates head;
     int length;
     String shout;
-    String squad;
 
-    public BattleSnake(String id, String name, int health, Vector<Coordinates> body, String latency, Coordinates head, int length, String shout, String squad) {
+    public BattleSnake(String id, String name, int health, Vector<Coordinates> body, String latency, Coordinates head, int length, String shout) {
         this.id = id;
         this.name = name;
         this.health = health;
@@ -22,6 +21,5 @@ public class BattleSnake {
         this.head = head;
         this.length = length;
         this.shout = shout;
-        this.squad = squad;
     }
 }

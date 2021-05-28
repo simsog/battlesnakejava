@@ -196,7 +196,6 @@ public class Snake {
                     gameReq.get("timeout").asInt());
         }
 
-
         private Board parseBoard(JsonNode boardReq) {
 
             LOG.info("error-2.1");
@@ -216,18 +215,6 @@ public class Snake {
 
         private BattleSnake parseSnake(JsonNode snakeReq) {
 
-            // TODO split this up into pieces and figure out why null pointer shit
-
-            String id =  snakeReq.get("id").asText();
-            String name =  snakeReq.get("name").asText();
-            int health =  snakeReq.get("health").asInt();
-            String body =  snakeReq.get("body").asText();
-            String latency =  snakeReq.get("latency").asText();
-            String head =  snakeReq.get("head").asText();
-            String length =  snakeReq.get("length").asText();
-            String shout =  snakeReq.get("shout").asText();
-            String squad =  snakeReq.get("squad").asText();
-
             BattleSnake test =  new BattleSnake(snakeReq.get("id").asText(),
                     snakeReq.get("name").asText(),
                     snakeReq.get("health").asInt(),
@@ -235,8 +222,7 @@ public class Snake {
                     snakeReq.get("latency").asText(),
                     parseCoordinates(snakeReq.get("head")),
                     snakeReq.get("length").asInt(),
-                    snakeReq.get("shout").asText(),
-                    snakeReq.get("squad").asText());
+                    snakeReq.get("shout").asText());
 
             LOG.info("--- Parsed snek: ---");
             return test;
