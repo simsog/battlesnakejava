@@ -282,6 +282,7 @@ public class Snake {
          * Check if the move is inside game board
          */
         private boolean legalMove(Direction dir, Coordinates head, Board board){
+            System.out.println("checking dir: " + convertMove(dir));
             switch (dir){
                 case UP: {
                     if (head.y >= board.height) return false;

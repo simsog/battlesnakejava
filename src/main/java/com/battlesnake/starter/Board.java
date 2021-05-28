@@ -35,7 +35,7 @@ public class Board {
     }
 
     public void printBoard() {
-        for (int h = 0; h < this.height; h++){
+        for (int h = this.height-1; h >= 0; h--){
             String line = "";
 
             for (int w = 0; w < this.width; w++){
